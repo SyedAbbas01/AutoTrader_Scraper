@@ -70,6 +70,15 @@ namespace AutoTrader_Scraper
 
                 StringBuilder sb = new StringBuilder();
 
+                List<Options> writeOffOptions = new List<Options>();
+                writeOffOptions.Insert(0, new Options() { Header = "All", Value = "" });
+                writeOffOptions.Add(new Options() { Header = "only-writeoff-categories", Value = "on" });
+                writeOffOptions.Add(new Options() { Header = "exclude-writeoff-categories", Value = "on" });
+                cboShowWriteOff.ItemsSource = writeOffOptions;
+                cboShowWriteOff.DisplayMemberPath = "Header";
+                cboShowWriteOff.SelectedValuePath = "Value";
+                
+
                 var dropDowns = doc.DocumentNode.Descendants("select");
 
                 List<Options> bodyTypes = doc.DocumentNode.Descendants("ul")
@@ -78,7 +87,7 @@ namespace AutoTrader_Scraper
                     .Select(z => new Options() { Header = z.Id, Value = z.Id })
                     .ToList();
 
-                bodyTypes.Insert(0, new Options() { Header = "", Value = "dummy" });
+                bodyTypes.Insert(0, new Options() { Header = "All", Value = "" });
 
                 cboBodyType.ItemsSource = bodyTypes;
                 cboBodyType.DisplayMemberPath = "Header";
@@ -288,13 +297,6 @@ namespace AutoTrader_Scraper
                                 cboSellerType.SelectedValue = Settings1.Default.cboSellerType;
                             }
                             break;
-                        case "showWriteOff":
-                            PopulateCombobox(options, cboShowWriteOff);
-                            if (!string.IsNullOrEmpty(Settings1.Default.cboShowWriteOff))
-                            {
-                                cboShowWriteOff.SelectedValue = Settings1.Default.cboShowWriteOff;
-                            }
-                            break;
                         case "colour":
                             PopulateCombobox(options, cboColour);
                             if (!string.IsNullOrEmpty(Settings1.Default.cboColour))
@@ -447,14 +449,14 @@ namespace AutoTrader_Scraper
         private static void PopulateCombobox(HtmlNode options, ComboBox comboBox, string bypass = null)
         {
             var list = new List<Options>();
-            list.Add(new Options() { Header = "", Value = "Dummy" });
+            list.Add(new Options() { Header = "All", Value = "" });
 
             if (bypass != null)
             {
                 switch (bypass)
                 {
                     case "year":
-                        for (int i = 1975; i < DateTime.Now.Year + 1; i++)
+                        for (int i = DateTime.Now.Year + 1; i > 1975; i--)
                         {
                             var option = new Options();
                             option.Header = i.ToString();
@@ -530,7 +532,7 @@ namespace AutoTrader_Scraper
                 criteria.model = GetComboBoxStringValue(cboModel);
 
                 criteria.postcode = GetComboBoxStringValue(cboPostCode);
-                criteria.distance = GetComboBoxIntValue(cboRadius);
+                criteria.radius = GetComboBoxIntValue(cboRadius);
 
                 criteria.price_from = GetComboBoxIntValue(cboPriceFrom);
                 criteria.price_to = GetComboBoxIntValue(cboPriceTo);
@@ -566,7 +568,8 @@ namespace AutoTrader_Scraper
                 criteria.co2_emissions_cars = GetComboBoxStringValue(cboCo2EmissionValue);
                 criteria.maximum_mileage = GetComboBoxStringValue(cboMaxMileage);
 
-                string url = criteria.GetSearchURL();
+                string url = "https://www.autotrader.co.uk/car-search?postcode=ox11ql&make=Vauxhall&model=Zafira&include-delivery-option=on&fuel-type=Diesel&aggregatedTrim=Design&exclude-writeoff-categories=on&year-from=2013&year-to=2014&maximum-mileage=90000&advertising-location=at_cars&page=1";
+                    //criteria.GetSearchURL();
 
                 Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
 
@@ -597,12 +600,12 @@ namespace AutoTrader_Scraper
 
         private string GetComboBoxStringValue(ComboBox comboBox)
         {
-            if (comboBox.SelectedIndex > 0) //skip dummy item
+            if (comboBox.SelectedIndex > 0) //skip 'All' item
             {
                 return comboBox.SelectedValue.ToString();
             }
 
-            if (!string.IsNullOrEmpty(comboBox.Text))
+            if (!string.IsNullOrEmpty(comboBox.Text) && comboBox.Text != "All")
             {
                 return comboBox.Text;
             }
@@ -612,7 +615,7 @@ namespace AutoTrader_Scraper
 
         private int GetComboBoxIntValue(ComboBox comboBox)
         {
-            if (comboBox.SelectedIndex > 0 && int.TryParse(comboBox.Text, out int parsedvalue)) //skip dummy item
+            if (comboBox.SelectedIndex > 1 && int.TryParse(comboBox.SelectedValue.ToString(), out int parsedvalue))
             {
                 return parsedvalue;
             }
@@ -760,10 +763,9 @@ namespace AutoTrader_Scraper
                                 cb.ItemsSource = Settings1.Default.postcodes;
                                 cb.SelectedValue = postcode;
                             }
-
                             break;
-                        case "model":
 
+                        case "model":
                             if (Settings1.Default.models == null)
                                 Settings1.Default.models = new System.Collections.Specialized.StringCollection();
 
@@ -851,7 +853,6 @@ namespace AutoTrader_Scraper
                 if (cb.IsEditable)
                     cb.Text = "";
                 else
-                    if (cb.SelectedIndex > 0)
                     cb.SelectedIndex = 0;
             }
         }

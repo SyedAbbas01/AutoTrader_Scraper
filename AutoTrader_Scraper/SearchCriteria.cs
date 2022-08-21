@@ -5,7 +5,7 @@ namespace AutoTrader_Scraper
     public class SearchCriteria
     {
         public string postcode { get; set; }
-        public int distance { get; set; }
+        public int radius { get; set; }
 
         public string make { get; set; }
         public string model { get; set; }
@@ -70,7 +70,7 @@ namespace AutoTrader_Scraper
             sb.Append(postcode == default ? "" : $"&{nameof(postcode).Replace('_', '-')}={postcode.Replace(" ", "")}");
             sb.Append(string.IsNullOrEmpty(make) ? "" : $"&{nameof(make).Replace('_', '-')}={make}");
             sb.Append(string.IsNullOrEmpty(model) ? "" : $"&{nameof(model).Replace('_', '-')}={model}");
-            sb.Append(distance == default ? "" : $"&{nameof(distance).Replace('_', '-')}={distance}");
+            sb.Append(radius == default ? "" : $"&{nameof(radius).Replace('_', '-')}={radius}");
             sb.Append(price_from == default ? "" : $"&{nameof(price_from).Replace('_', '-')}={price_from}");
             sb.Append(price_to == default ? "" : $"&{nameof(price_to).Replace('_', '-')}={price_to}");
             sb.Append(year_from == default ? "" : $"&{nameof(year_from).Replace('_', '-')}={year_from}");
@@ -88,7 +88,6 @@ namespace AutoTrader_Scraper
             sb.Append(maximum_seats == default ? "" : $"&{nameof(maximum_seats).Replace('_', '-')}={maximum_seats}");
             sb.Append(minimum_seats == default ? "" : $"&{nameof(minimum_seats).Replace('_', '-')}={minimum_seats}");
             sb.Append(quantity_of_doors == default ? "" : $"&{nameof(quantity_of_doors).Replace('_', '-')}={quantity_of_doors}");
-
 
             sb.Append("&include-delivery-option=on&advertising-location=at_cars&page=");
 
